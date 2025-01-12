@@ -1,0 +1,4 @@
+/venv
+.DS_Store
+/datacenter/__pycache__
+/datacenter/migrations/__pycache__
