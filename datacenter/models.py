@@ -35,13 +35,9 @@ class Visit(models.Model):
         )
 
     def get_duration(self):
+        end_time = localtime(self.leaved_at) if self.leaved_at else localtime()
         entered_at_local = localtime(self.entered_at)
-        if self.leaved_at:
-            leaved_at_local = localtime(self.leaved_at)
-            duration = leaved_at_local - entered_at_local
-        else:
-            current_time = localtime()
-            duration = current_time - entered_at_local
+        duration = end_time - entered_at_local
         duration_in_seconds = int(duration.total_seconds())
         return duration_in_seconds
 
