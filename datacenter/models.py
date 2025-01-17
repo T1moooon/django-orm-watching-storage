@@ -2,6 +2,10 @@ from django.db import models
 from django.utils.timezone import localtime
 
 
+SECONDS_IN_MINUTE = 60
+SECONDS_IN_HOUR = 3600
+
+
 class Passcard(models.Model):
     is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now=True)
@@ -31,22 +35,23 @@ class Visit(models.Model):
         )
 
     def get_duration(self):
-        current_time = localtime()
-        enter_time = localtime(self.entered_at)
-        duration = current_time - enter_time
-        return int(duration.total_seconds())
+        entered_at_local = localtime(self.entered_at)
+        if self.leaved_at:
+            leaved_at_local = localtime(self.leaved_at)
+            duration = leaved_at_local - entered_at_local
+        else:
+            current_time = localtime()
+            duration = current_time - entered_at_local
+        duration_in_seconds = int(duration.total_seconds())
+        return duration_in_seconds
 
-    def format_duration(self):
-        hours, remainder = divmod(self, 3600)
-        minutes, _ = divmod(remainder, 60)
-        return f'{hours}ч {minutes}мин'
+    def format_duration(self, duration_seconds):
+        hours, remainder = divmod(duration_seconds, SECONDS_IN_HOUR)
+        minutes, _ = divmod(remainder, SECONDS_IN_MINUTE)
+        format_time = f'{int(hours)}ч {int(minutes)}мин'
+        return format_time
 
     def is_visit_long(self, check_minutes=60):
-        if self.leaved_at is None:
-            return "Еще внутри"
-        entered_time = localtime(self.entered_at)
-        leaved_time = localtime(self.leaved_at)
-        delta = leaved_time - entered_time
-        delta_seconds = delta.total_seconds()
-        duration_in_minutes = delta_seconds // 60
+        duration_seconds = self.get_duration()
+        duration_in_minutes = duration_seconds // SECONDS_IN_MINUTE
         return duration_in_minutes >= check_minutes

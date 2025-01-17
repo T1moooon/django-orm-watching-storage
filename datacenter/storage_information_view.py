@@ -1,19 +1,17 @@
 from django.shortcuts import render
-from django.utils.timezone import localtime
 from .models import Visit
 
 
 def storage_information_view(request):
     visits = Visit.objects.filter(leaved_at__isnull=True)
     non_closed_visits = []
- 
+
     for visit in visits:
-        enter_time = localtime(visit.entered_at)
-        visit_duration = Visit.get_duration(visit)
-        duration = Visit.format_duration(visit_duration)
+        visit_duration = visit.get_duration()
+        duration = visit.format_duration(visit_duration)
         non_closed_visits.append({
             'who_entered': visit.passcard.owner_name,
-            'entered_at': enter_time,
+            'entered_at': visit.entered_at,
             'duration': duration,
         })
     context = {
